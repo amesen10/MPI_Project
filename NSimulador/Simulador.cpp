@@ -1,10 +1,12 @@
-#include <mpi.h>
-#include <iostream>
-#include <vector>
 #include <algorithm>
-#include <string>
+#include <fstream>
+#include <iostream>
 #include <list>
+#include <mpi.h>
 #include <random>
+#include <string>
+#include <vector>
+
 using namespace std;
 
 #define DEBUG
@@ -13,7 +15,7 @@ void uso(string nombre_prog);
 
 void obt_args(char* argv[], int& numeroPersonas, double& infeccion, double& recuperacion, int& duracion, double& infectadas, int& size);
 
-void iniciar(int *matriz, int& nPersonas, int& nInicialInfectados, int &size)
+void iniciar(int *matriz, int& nPersonas, int& nInicialInfectados, int& sanasT, int &size)
 {
 	default_random_engine generator;
 	uniform_int_distribution <int> distributionXY(0, size - 1);
@@ -32,6 +34,8 @@ void iniciar(int *matriz, int& nPersonas, int& nInicialInfectados, int &size)
 	for (int iter = nInicialInfectados * 4; iter<nPersonas * T; iter += T)
 	{
 		*(matriz + iter) = distribution12(generator);		//Estado 1 (Inmune) o 2 (Sano)
+		if (*(matriz + iter) == 2)
+			++sanasT;
 		*(matriz + iter + 1) = 0;							//Dias infectados
 		*(matriz + iter + 2) = distributionXY(generator);	//Posición en Eje-X
 		*(matriz + iter + 3) = distributionXY(generator);	//Posición en Eje-Y
@@ -184,9 +188,47 @@ int cuentaInfectados(int *matriz, int& nPersonas, int& cnt_proc, int& mid)
 	return enfermosRestantes;
 }
 
-void imprimirEstadisticas()
+void imprimirEstadisticas(int& const nPersonas,int& const tInfectadas, int& const tSanas, int& const tInmunes, int& const tMuertas, int& const tics)
 {
+	cout << endl << endl << "     ------------------------------ Dia " << tics << " ------------------------------" << endl << endl;
+	cout << "\n\t\t\t   Personas infectadas \n\n\t Porcentaje: " << 1.0*tInfectadas / nPersonas << "\t\t\t\t Cantidad actual: " << tInfectadas << endl
+		//<< "\n\n\t\t\t    Total infectadas \n\n\t Porcentaje: " << 1.0*totalinfectados / nPersonas << "\t\t\t\t Cantidad actual: " << totalinfectados << endl
+		<< "\n\n\t\t\t     Personas sanos \n\n\t Porcentaje : " << 1.0*tSanas / nPersonas << "\t\t\t\t Cantidad actual: " << tSanas << endl
+		<< "\n\n\t\t\t    Personas curados \n\n\t Porcentaje : " << 1.0*tInmunes / nPersonas << "\t\t\t\t Cantidad actual: " << tInmunes << endl
+		<< "\n\n\t\t\t    Personas muertas \n\n\t Porcentaje : " << 1.0*tMuertas / nPersonas << "\t\t\t\t Cantidad actual: " << tMuertas << endl << endl;
 
+	ofstream archivo;
+	archivo.open("Estadisticas.txt", std::fstream::app);
+	archivo << endl << endl
+		<< "\t------------------------------ Dia " << tics << " ------------------------------" << endl << endl
+		<< "\n\t\t\t  Personas infectadas \n\n\t Porcentaje: " << 1.0*tInfectadas / nPersonas << "\t\t\t\t Cantidad actual: " << tInfectadas << endl
+		//<< "\n\n\t\t\t    Total infectadas \n\n\t Porcentaje: " << 1.0*totalinfectados / num_personas << "\t\t\t\t Cantidad actual: " << totalinfectados << endl
+		<< "\n\n\t\t\t     Personas sanos \n\n\t Porcentaje : " << 1.0*tSanas / nPersonas << "\t\t\t\t Cantidad actual: " << tSanas << endl
+		<< "\n\n\t\t\t    Personas curados \n\n\t Porcentaje : " << 1.0*tInmunes / nPersonas << "\t\t\t\t Cantidad actual: " << tInmunes << endl
+		<< "\n\n\t\t\t    Personas muertas \n\n\t Porcentaje : " << 1.0*tMuertas / nPersonas << "\t\t\t\t Cantidad actual: " << tMuertas << endl << endl;
+	archivo.close();
+}
+
+void EstadisticasFinales(int& const nPersonas, int& const infectadasT, int& const tSanas, int& const sanasI, int& const curadasT, int& const inmunesT, int& const muertasT, int& const tics)
+{
+	cout << "     -------------------------------------------------------------------" << endl << endl;
+	cout << "\n\n\n\t\t\t ESTADISTICAS FINALES" << endl << endl;
+	cout << "\n\t\t\t  Personas infectadas \n\n\t Porcentaje: " << 1.0*infectadasT / nPersonas << "\t\t\t Cantidad total: " << infectadasT << endl
+		<< "\n\n\t\t\t    Sanos Iniciales  \n\n\t Porcentaje : " << 1.0*sanasI / nPersonas << "\t\t\t Cantidad total: " << sanasI << endl
+		<< "\n\n\t\t\t    Sanos Restantes \n\n\t Porcentaje : " << 1.0*tSanas / nPersonas << "\t\t\t Cantidad total: " << tSanas << endl
+		<< "\n\n\t\t\t    Personas curados \n\n\t Porcentaje : " << 1.0*curadasT / nPersonas << "\t\t\t Cantidad total: " << curadasT << endl
+		<< "\n\n\t\t\t    Personas muertas \n\n\t Porcentaje : " << 1.0*muertasT / nPersonas << "\t\t\t Cantidad total: " << muertasT << endl << endl;
+
+	ofstream archivo;
+	archivo.open("Estadisticas.txt", std::fstream::app);
+	archivo << "\t-------------------------------------------------------------------" << endl << endl
+		<< "\n\n\t\t\t\t ESTADISTICAS FINALES" << endl << endl
+		<< "\n\t\t\t  Personas infectadas \n\n\t Porcentaje: " << 1.0*infectadasT / nPersonas << "\t\t\t Cantidad total: " << infectadasT << endl
+		<< "\n\n\t\t\t    Sanos Iniciales \n\n\t Porcentaje : " << 1.0*sanasI / nPersonas << "\t\t\t Cantidad total: " << sanasI << endl
+		<< "\n\n\t\t\t    Sanos Restantes \n\n\t Porcentaje : " << 1.0*tSanas / nPersonas << "\t\t\t Cantidad total: " << tSanas << endl
+		<< "\n\n\t\t\t    Personas curados \n\n\t Porcentaje : " << 1.0*curadasT / nPersonas << "\t\t\t Cantidad total: " << curadasT << endl
+		<< "\n\n\t\t\t    Personas muertas \n\n\t Porcentaje : " << 1.0*muertasT / nPersonas << "\t\t\t Cantidad total: " << muertasT << endl << endl;
+	archivo.close();
 }
 
 int main(int argc, char* argv[]) {
@@ -205,12 +247,12 @@ int main(int argc, char* argv[]) {
 #endif
 
 	int nPersonas, duracion, size, tics = 0;
-	int tInfectadas, tSanas, tCuradas, tInmunes, tMuertas;	//Contadores para las estadísticas de cada tic
+	int tInfectadas=0, tSanas = 0, tCuradas = 0, tInmunes = 0, tMuertas = 0;	//Contadores para las estadísticas de cada tic
 	int infectadasT = 0, sanasT = 0, curadasT = 0, inmunesT = 0, muertasT = 0;	//Contadores para las estadísticas finales
 	double infeccion, recuperacion, infectadas;
 	double local_start, local_finish, local_elapsed, elapsed;
 	double tPared=0;	//t=tiempo
-	int veces;	//Será el numero de personas entre la cantidad de procesos
+	ofstream archivo;
 
 	obt_args(argv, nPersonas, infeccion, recuperacion, duracion, infectadas, size);
 
@@ -220,8 +262,10 @@ int main(int argc, char* argv[]) {
 
 	if (mid == 0)		//Creación de la matriz en el proceso principal
 	{
+		archivo.open("Estadisticas.txt");
+		archivo.close();
 		cout << "\t MATRIZ INICIAL" << endl << endl;
-		iniciar(matriz, nPersonas, nInicialInfectados, size);	//Comienza la simulación
+		iniciar(matriz, nPersonas, nInicialInfectados, sanasT, size);	//Comienza la simulación
 		imprimir(matriz, nPersonas);
 	}
 
@@ -260,12 +304,13 @@ int main(int argc, char* argv[]) {
 		MPI_Reduce(&local_elapsed, &elapsed, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 		
 		if(mid==0)
-		{	//llamr al imprimir los datos tanto pot consola como por el archivo
+		{	
 			infectadasT += tInfectadas;
 			curadasT += tCuradas;
 			muertasT += tMuertas;
-			sanasT += tSanas;
+			//sanasT += tSanas;
 			tPared += elapsed;
+			imprimirEstadisticas(nPersonas, tInfectadas, tSanas, tInmunes, tMuertas, tics);
 		}
 
 		free(subMatriz);
@@ -273,14 +318,23 @@ int main(int argc, char* argv[]) {
 	} while (enfermosRestantes!=0);
 
 	MPI_Barrier(MPI_COMM_WORLD);
-	//acá va la impresión final (usar las variable sque terminan con T)
 	
 	if (mid == 0)
 	{
+		//acá va la impresión final (usar las variable sque terminan con T)
+		EstadisticasFinales(nPersonas, infectadasT, tSanas/*para los sanos restantes*/, sanasT, curadasT, inmunesT, muertasT, tics);
+
 		cout << "\t MATRIZ FINAL " << tics << endl << endl;
 		imprimir(matriz, nPersonas);
-		cout << endl << endl << "Time: " << elapsed << "s" << endl;
-		cout << endl << "TICS totales: " << tics << endl;
+		cout<< endl << "\t  Tics totales: " << tics << endl
+			<< endl << "\t  Tiempo-Pared: " << elapsed << "s" << endl	//y lo de tiempo barrera
+			<< endl << "\t  Tiempo-Pared/Tic: " << elapsed / tics << "s" << endl;
+		archivo.open("Estadisticas.txt", std::fstream::app);
+		archivo << "\t-------------------------------------------------------------------" << endl << endl
+			<< endl << "\t  Tics totales: " << tics << endl
+			<< endl << "\t  Tiempo-Pared: " << elapsed << "s" << endl	//y lo de tiempo barrera
+			<< endl << "\t  Tiempo-Pared/Tic: " << elapsed / tics << "s" << endl;
+		archivo.close();
 		cin.ignore();
 	}
 	free(matriz);		//Liberación de la memoria ocupada
