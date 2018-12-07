@@ -106,6 +106,88 @@ void simulacion(int *subMatriz, int& nPersonas, int& cnt_proc, int& size)
 	}*/
 }
 
+void validar(int *matriz, int& nPersonas, int& cnt_proc, int& duracion, double& recuperacion, double& infeccion, int& nInfectados, int& tCuradas, int& tMuertas, int& tSanas)
+{
+	/*NOTA: los enfermosRestantes se pueden estar contando doble, mejor hacer un solo ciclo que busque cuántos enfermos hay, incluso se pdoria hacer en otro método*/
+	default_random_engine generator;
+	uniform_real_distribution <double> proba(0, 1);
+	//int enfermosRestantes=0;
+	//enfermosRestantes=0;
+	int  posicionEnfermos = 1, contador = 0;
+	for (contador; contador < nPersonas*T; contador += T)
+	{
+		if (*(matriz + contador) == 2)	//Persona sana
+			++tSanas;
+		else
+		{
+			posicionEnfermos = 1;
+			//Si está infectado:
+			if (*(matriz + contador) == 3)
+			{	//	1-Busca infectar a los que pueda
+				for (int i = 0; i < nPersonas*T; i += T)		//Busca los enfermos en la misma posición que el enfermo actual
+				{
+					if (*(matriz + contador + 2) == *(matriz + i + 2) &&
+						*(matriz + contador + 3) == *(matriz + i + 3) &&
+						*(matriz + i) == 3)
+					{
+						++posicionEnfermos;
+					}
+
+				}
+
+				for (int i = 0; i < nPersonas*T; i += T)
+				{
+					if (*(matriz + contador + 2) == *(matriz + i + 2) &&	//Si el enfermo está en la misma celda que el enfermo y además está sano
+						*(matriz + contador + 3) == *(matriz + i + 3) &&
+						*(matriz + i) == 2)
+					{
+						//Se hace el cálculo de la probabilidad y se asigna el nuevo estado en caso de darse el contagio
+						if (proba(generator)*posicionEnfermos < infeccion)
+						{
+							//cout << "\t INFECTA" << endl;
+							*(matriz + i) = 3;
+							++nInfectados;
+							--tSanas;
+						}
+
+					}
+				}
+				//	2-Verifica si ya es tiempo de morir o de recuperarse
+				if (*(matriz + contador + 1) == duracion)
+				{
+					if (proba(generator) < recuperacion)//Calcular probabilidad de recuperacion o de muerte de acuerdo a  @recuperacion
+					{
+						*(matriz + contador) = 0;		//Se actualiza el estado a Muerto=0
+						//cout << "\t MUERE" << endl;	//Incrementar muertos totales (tMuertas)
+						++tMuertas;
+					}
+					else
+					{
+						*(matriz + contador) = 1;	//Se convierte a Inmune i.e. se sana
+						//cout << "\t CURA" << endl;	//Actualizar el contador de Curadas
+						++tCuradas;
+					}
+				}
+			}
+		}
+	}
+}
+
+int cuentaInfectados(int *matriz, int& nPersonas, int& cnt_proc, int& mid)
+{
+	int enfermosRestantes = 0;
+	for (int i = mid * (nPersonas / cnt_proc)*T; i < mid * (nPersonas / cnt_proc)*T + (nPersonas / cnt_proc)*T; i += T)
+	{
+		if (*(matriz + i) == 3)
+			++enfermosRestantes;
+	}
+	return enfermosRestantes;
+}
+
+void imprimirEstadisticas()
+{
+
+}
 
 int main(int argc, char* argv[]) {
 	int mid;
@@ -122,12 +204,12 @@ int main(int argc, char* argv[]) {
 	MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-	//aqui va el codigo
 	int nPersonas, duracion, size, tics = 0;
 	int tInfectadas, tSanas, tCuradas, tInmunes, tMuertas;	//Contadores para las estadísticas de cada tic
 	int infectadasT = 0, sanasT = 0, curadasT = 0, inmunesT = 0, muertasT = 0;	//Contadores para las estadísticas finales
 	double infeccion, recuperacion, infectadas;
-	double tPared;	//t=tiempo
+	double local_start, local_finish, local_elapsed, elapsed;
+	double tPared=0;	//t=tiempo
 	int veces;	//Será el numero de personas entre la cantidad de procesos
 
 	obt_args(argv, nPersonas, infeccion, recuperacion, duracion, infectadas, size);
@@ -146,39 +228,64 @@ int main(int argc, char* argv[]) {
 	int enfermosRestantes = 0, enfermosTic = 0;
 	do
 	{
-		MPI_Bcast(matriz, nPersonas, MPI_INT, 0, MPI_COMM_WORLD);	//Comparte el espacio (matriz) con todos los procesos
+		enfermosTic = 0; tInfectadas = 0, tCuradas = 0, tSanas = 0, tMuertas = 0;
 		int *subMatriz = new int[(nPersonas / cnt_proc) *T];
-		MPI_Scatter(matriz, nPersonas / cnt_proc * T, MPI_INT, subMatriz, nPersonas / cnt_proc * T, MPI_INT, 0, MPI_COMM_WORLD);		//Se separa el espacio total entre los procesos para realizar las verificaciones correspondientes
-		
+		//iniciar acá el tiempo 
+		local_start = MPI_Wtime();
+		MPI_Bcast(matriz, nPersonas, MPI_INT, 0, MPI_COMM_WORLD);	//Comparte el espacio (matriz) con todos los procesos
+		MPI_Scatter(matriz, nPersonas / cnt_proc * T, MPI_INT, subMatriz, nPersonas / cnt_proc * T, MPI_INT, 0, MPI_COMM_WORLD);		//Se separa el espacio total entre los procesos para realizar el movimiento de cada una de las personas
+
 		//------------------------MOVIMIENTO-------------------------------------
 		simulacion(subMatriz, nPersonas, cnt_proc, size);
+		//Se comparte el espacio luego del movimiento hecho por cada uno de los procesos
 		MPI_Allgather(subMatriz, (nPersonas / cnt_proc) *T, MPI_INT, matriz, (nPersonas / cnt_proc) *T, MPI_INT, MPI_COMM_WORLD); //Vuelve a reunir la submatriz en matriz
 		/*	HASTA ACÁ TODO BIEN :)	*/
-		if (mid == 0)		//Creación de la matriz en el proceso principal
+
+		//if (mid == 0)		//Verificación del movimiento, todos los hilos tienen la misma matriz
+		//{
+		//	cout << "\t MATRIZ MOVIDA " <<tics<< endl << endl;
+		//	imprimir(matriz, nPersonas);
+		//}
+		if (mid == 0) //La validación(infectar, muerte y sanación se hace con el proceso prinicipal, los resultados luego son compartidos al resto de procesos)
 		{
-			cout << "\t MATRIZ MOVIDA 0" << endl << endl;
-			imprimir(matriz, nPersonas);
+			validar(matriz, nPersonas, cnt_proc, duracion, recuperacion, infeccion, tInfectadas, tCuradas, tMuertas, tSanas);
 		}
+
+		enfermosTic = cuentaInfectados(matriz, nPersonas, cnt_proc, mid);		//Se recorre de forma paralela el espacio para buscar la cantidad de enfermos en un rango, luego se reducen y se comparten
+		MPI_Allreduce(&enfermosTic, &enfermosRestantes, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);	//Reducción para saber llevar el control de cuándo se estabiliza la infección
+		
+		//cortar acá el tiempo y luego acumularla en una variable global
+		local_finish = MPI_Wtime();
+		local_elapsed = local_finish - local_start;
+		MPI_Reduce(&local_elapsed, &elapsed, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+		
+		if(mid==0)
+		{	//llamr al imprimir los datos tanto pot consola como por el archivo
+			infectadasT += tInfectadas;
+			curadasT += tCuradas;
+			muertasT += tMuertas;
+			sanasT += tSanas;
+			tPared += elapsed;
+		}
+
 		free(subMatriz);
 		++tics;
 	} while (enfermosRestantes!=0);
 
 	MPI_Barrier(MPI_COMM_WORLD);
-	free(matriz);		//Liberación de la memoria ocupada
-	int n;
-	MPI_Allreduce(&tics, &n, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+	//acá va la impresión final (usar las variable sque terminan con T)
+	
 	if (mid == 0)
 	{
-
-		//cout << endl << endl << "Time: " << elapsed << "s" << endl;
+		cout << "\t MATRIZ FINAL " << tics << endl << endl;
+		imprimir(matriz, nPersonas);
+		cout << endl << endl << "Time: " << elapsed << "s" << endl;
 		cout << endl << "TICS totales: " << tics << endl;
 		cin.ignore();
 	}
+	free(matriz);		//Liberación de la memoria ocupada
 	MPI_Finalize();
-
-
 	return 0;
-
 }
 
 void uso(string nombre_prog) {
