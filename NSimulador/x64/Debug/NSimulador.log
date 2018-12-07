@@ -1,0 +1,11 @@
+﻿  Simulador.cpp
+c:\users\b64390\desktop\proyectompi\nsimulador\nsimulador\simulador.cpp(137): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\b64390\desktop\proyectompi\nsimulador\nsimulador\simulador.cpp(127): warning C4101: 'tInmunes': unreferenced local variable
+c:\users\b64390\desktop\proyectompi\nsimulador\nsimulador\simulador.cpp(127): warning C4101: 'tInfectadas': unreferenced local variable
+c:\users\b64390\desktop\proyectompi\nsimulador\nsimulador\simulador.cpp(127): warning C4101: 'tSanas': unreferenced local variable
+c:\users\b64390\desktop\proyectompi\nsimulador\nsimulador\simulador.cpp(127): warning C4101: 'tMuertas': unreferenced local variable
+c:\users\b64390\desktop\proyectompi\nsimulador\nsimulador\simulador.cpp(131): warning C4101: 'veces': unreferenced local variable
+c:\users\b64390\desktop\proyectompi\nsimulador\nsimulador\simulador.cpp(130): warning C4101: 'tPared': unreferenced local variable
+c:\users\b64390\desktop\proyectompi\nsimulador\nsimulador\simulador.cpp(113): warning C4101: 'mpi_status': unreferenced local variable
+c:\users\b64390\desktop\proyectompi\nsimulador\nsimulador\simulador.cpp(127): warning C4101: 'tCuradas': unreferenced local variable
+  NSimulador.vcxproj -> C:\Users\b64390\Desktop\ProyectoMPI\NSimulador\x64\Debug\NSimulador.exe
