@@ -160,26 +160,50 @@ void validar(int *matriz, int **mInfectados, int& nPersonas, int& cnt_proc, int&
 	}
 }
 
-//int cuentaInfectados(int *matriz, int& nPersonas, int& cnt_proc, int& mid)
-int cuentaInfectados(int *matriz, int** infectados, int& nPersonas, int& cnt_proc, int& mid)
+void llenarMatrizEnfermos(int *matriz, int** infectados, int& nPersonas)
+{
+	for (int i = 0; i < nPersonas *T; i += T)
+	{
+		if (*(matriz + i) == 3)
+		{
+			infectados[*(matriz + i + 2)][*(matriz + i + 3)] = infectados[*(matriz + i + 2)][*(matriz + i + 3)] + 1;
+		}
+	}
+}
+
+//int cuentaInfectados(int *matriz, int** infectados, int& nPersonas, int& cnt_proc, int& mid)
+int cuentaInfectados(int *matriz, int& nPersonas, int& cnt_proc, int& mid/*, int& tSanas*/)
 {
 	int enfermosRestantes = 0;
 	for (int i = mid * (nPersonas / cnt_proc)*T; i < mid * (nPersonas / cnt_proc)*T + (nPersonas / cnt_proc)*T; i += T)
+	//for (int i = 0; i < nPersonas *T; i += T)
 	{
 		if (*(matriz + i) == 3)
 		{
 			++enfermosRestantes;
-			infectados[*(matriz + i + 2)][*(matriz + i + 3)] = infectados[*(matriz + i + 2)][*(matriz + i + 3)] + 1;
+			//infectados[*(matriz + i + 2)][*(matriz + i + 3)] = infectados[*(matriz + i + 2)][*(matriz + i + 3)] + 1;
 		}
+		/*else
+			if (*(matriz + i) == 2)
+				++tSanas;*/
 	}
 	return enfermosRestantes;
 }
 
-void imprimirEstadisticas(int& const nPersonas,int& const tInfectadas, int& const tSanas, int& const tInmunes, int& const tMuertas, int& const tics)
+int cuentaSanos(int *matriz, int& nPersonas, int& cnt_proc, int& mid)
+{
+	int sanosRestantes = 0;
+	for (int i = mid * (nPersonas / cnt_proc)*T; i < mid * (nPersonas / cnt_proc)*T + (nPersonas / cnt_proc)*T; i += T)
+		if (*(matriz + i) == 2)
+			++sanosRestantes;
+	return sanosRestantes;
+}
+
+void imprimirEstadisticas(int& const nPersonas,int& const tInfectadas,int& enfermosRestantes, int& const tSanas, int& const tInmunes, int& const tMuertas, int& const tics)
 {
 	cout << endl << endl << "     ------------------------------ Dia " << tics << " ------------------------------" << endl << endl;
 	cout << "\n\t\t\t   Personas infectadas \n\n\t Porcentaje: " << 1.0*tInfectadas / nPersonas << "\t\t\t\t Cantidad actual: " << tInfectadas << endl
-		//<< "\n\n\t\t\t    Total infectadas \n\n\t Porcentaje: " << 1.0*totalinfectados / nPersonas << "\t\t\t\t Cantidad actual: " << totalinfectados << endl
+		<< "\n\n\t\t\t  Infectadas Restantes \n\n\t Porcentaje: " << 1.0*enfermosRestantes / nPersonas << "\t\t\t\t Cantidad actual: " << enfermosRestantes << endl
 		<< "\n\n\t\t\t     Personas sanos \n\n\t Porcentaje : " << 1.0*tSanas / nPersonas << "\t\t\t\t Cantidad actual: " << tSanas << endl
 		<< "\n\n\t\t\t    Personas curados \n\n\t Porcentaje : " << 1.0*tInmunes / nPersonas << "\t\t\t\t Cantidad actual: " << tInmunes << endl
 		<< "\n\n\t\t\t    Personas muertas \n\n\t Porcentaje : " << 1.0*tMuertas / nPersonas << "\t\t\t\t Cantidad actual: " << tMuertas << endl << endl;
@@ -189,7 +213,7 @@ void imprimirEstadisticas(int& const nPersonas,int& const tInfectadas, int& cons
 	archivo << endl << endl
 		<< "\t------------------------------ Dia " << tics << " ------------------------------" << endl << endl
 		<< "\n\t\t\t  Personas infectadas \n\n\t Porcentaje: " << 1.0*tInfectadas / nPersonas << "\t\t\t\t Cantidad actual: " << tInfectadas << endl
-		//<< "\n\n\t\t\t    Total infectadas \n\n\t Porcentaje: " << 1.0*totalinfectados / num_personas << "\t\t\t\t Cantidad actual: " << totalinfectados << endl
+		<< "\n\n\t\t\t  Infectadas Restantes \n\n\t Porcentaje: " << 1.0*enfermosRestantes / nPersonas << "\t\t\t\t Cantidad actual: " << enfermosRestantes << endl
 		<< "\n\n\t\t\t     Personas sanos \n\n\t Porcentaje : " << 1.0*tSanas / nPersonas << "\t\t\t\t Cantidad actual: " << tSanas << endl
 		<< "\n\n\t\t\t    Personas curados \n\n\t Porcentaje : " << 1.0*tInmunes / nPersonas << "\t\t\t\t Cantidad actual: " << tInmunes << endl
 		<< "\n\n\t\t\t    Personas muertas \n\n\t Porcentaje : " << 1.0*tMuertas / nPersonas << "\t\t\t\t Cantidad actual: " << tMuertas << endl << endl;
@@ -249,6 +273,7 @@ int main(int argc, char* argv[]) {
 
 	if (mid == 0)		//Creación de la matriz en el proceso principal
 	{
+		//cout << " nInicialInfectados" << nInicialInfectados << endl;
 		archivo.open("Estadisticas.txt");
 		archivo.close();
 		//cout << "\t MATRIZ INICIAL" << endl << endl;
@@ -259,7 +284,7 @@ int main(int argc, char* argv[]) {
 	int enfermosRestantes = 0, enfermosTic = 0;
 	do
 	{
-		enfermosTic = 0; tInfectadas = 0, tCuradas = 0, tSanas = 0, tMuertas = 0;
+		tInfectadas = 0, tCuradas = 0, tSanas = 0, tMuertas = 0;
 		int *subMatriz = new int[(nPersonas / cnt_proc) *T];
 		int **mInfectados = new int*[size];
 		for (int i = 0; i < size; ++i)
@@ -274,40 +299,56 @@ int main(int argc, char* argv[]) {
 		//		//Se recorre de forma paralela el espacio para buscar la cantidad de enfermos en un rango, luego se reducen y se comparten
 
 		//}
+		
 		local_start = MPI_Wtime();
 		MPI_Bcast(matriz, nPersonas, MPI_INT, 0, MPI_COMM_WORLD);	//Comparte el espacio (matriz) con todos los procesos
 		MPI_Scatter(matriz, nPersonas / cnt_proc * T, MPI_INT, subMatriz, nPersonas / cnt_proc * T, MPI_INT, 0, MPI_COMM_WORLD);		//Se separa el espacio total entre los procesos para realizar el movimiento de cada una de las personas
-		//------------------------MOVIMIENTO-------------------------------------
 		
-		simulacion(subMatriz, nPersonas, cnt_proc, size);
-		//Se comparte el espacio luego del movimiento hecho por cada uno de los procesos
-		MPI_Allgather(subMatriz, (nPersonas / cnt_proc) *T, MPI_INT, matriz, (nPersonas / cnt_proc) *T, MPI_INT, MPI_COMM_WORLD); //Vuelve a reunir la submatriz en matriz
-		enfermosTic=cuentaInfectados(matriz, mInfectados, nPersonas, cnt_proc, mid);
+		llenarMatrizEnfermos(matriz, mInfectados, nPersonas);
+		
+		/*if(mid==0)
+			cout << "enfermosTic" << enfermosTic << endl;
+		*/
 		//MPI_Bcast(mInfectados, nPersonas, MPI_INT, 0, MPI_COMM_WORLD);	
 		//Impresion de la matriz con la cantidad de personas infectadas por celda
 		/*if(mid==0)
 			for (int i = 0; i < size; ++i)
-				for (int j = 0; j < size; ++j)
+				for (int j = 0; j < size; +000000000+j)
 					cout << mInfectados[i][j] << " ";*/
-		
-		MPI_Scatter(matriz, nPersonas / cnt_proc * T, MPI_INT, subMatriz, nPersonas / cnt_proc * T, MPI_INT, 0, MPI_COMM_WORLD);		//Se separa el espacio total entre los procesos para realizar el movimiento de cada una de las personas
+		//MPI_Scatter(matriz, nPersonas / cnt_proc * T, MPI_INT, subMatriz, nPersonas / cnt_proc * T, MPI_INT, 0, MPI_COMM_WORLD);		//Se separa el espacio total entre los procesos para realizar el movimiento de cada una de las personas
 		validar(subMatriz, mInfectados, nPersonas, cnt_proc, duracion, recuperacion, infeccion, tInfectadas, tCuradas, tMuertas, tSanas);
-		MPI_Allgather(subMatriz, (nPersonas / cnt_proc) *T, MPI_INT, matriz, (nPersonas / cnt_proc) *T, MPI_INT, MPI_COMM_WORLD); //Vuelve a reunir la submatriz en matriz
+		
+		//------------------------MOVIMIENTO-------------------------------------
+		simulacion(subMatriz, nPersonas, cnt_proc, size);
+		//Se comparte el espacio luego del movimiento hecho por cada uno de los procesos
+		//MPI_Allgather(subMatriz, (nPersonas / cnt_proc) *T, MPI_INT, matriz, (nPersonas / cnt_proc) *T, MPI_INT, MPI_COMM_WORLD); //Vuelve a reunir la submatriz en matriz
+		
+		//MPI_Allgather(subMatriz, (nPersonas / cnt_proc) *T, MPI_INT, matriz, (nPersonas / cnt_proc) *T, MPI_INT, MPI_COMM_WORLD); //Vuelve a reunir la submatriz en matriz
+		MPI_Gather(subMatriz, (nPersonas / cnt_proc) *T, MPI_INT, matriz, (nPersonas / cnt_proc) *T, MPI_INT, 0, MPI_COMM_WORLD); //Vuelve a reunir la submatriz en matriz
+		if (mid == 0)
+		{
+			enfermosTic = cuentaInfectados(matriz, nPersonas, cnt_proc, mid);
+			tSanas = cuentaSanos(matriz, nPersonas, cnt_proc, mid);
+		}
 		MPI_Allreduce(&enfermosTic, &enfermosRestantes, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);	//Reducción para saber llevar el control de cuándo se estabiliza la infección
 	
 		////cortar acá el tiempo y luego acumularla en una variable global
 		local_finish = MPI_Wtime();
 		local_elapsed = local_finish - local_start;
 		MPI_Reduce(&local_elapsed, &elapsed, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-		
+		int inf, cur, tmue, san;
+		MPI_Reduce(&tInfectadas, &inf, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+		MPI_Reduce(&tCuradas, &cur, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+		MPI_Reduce(&tMuertas, &tmue, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+		MPI_Reduce(&tSanas, &san, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 		if(mid==0)
 		{	
-			infectadasT += tInfectadas;
-			curadasT += tCuradas;
-			muertasT += tMuertas;
+			infectadasT += inf;
+			curadasT += cur;
+			muertasT += tmue;
 			//sanasT += tSanas;
 			tPared += elapsed;
-			imprimirEstadisticas(nPersonas, tInfectadas, tSanas, tInmunes, tMuertas, tics);
+			imprimirEstadisticas(nPersonas, inf, enfermosRestantes, san, cur, tmue, tics);
 		}
 
 		free(subMatriz);
