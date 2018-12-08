@@ -21,7 +21,7 @@ void iniciar(int *matriz, int& nPersonas, int& nInicialInfectados, int& sanasT, 
 	uniform_int_distribution <int> distributionXY(0, size - 1);
 	uniform_int_distribution <int> distribution12(1, 2);
 
-	//aqui estamos llenando el vector con los enfermos que se tienen como parametro
+	//Se llena el vector con los enfermos que se tienen como párametro nInicialInfectados
 	for (int iter = 0; iter < nInicialInfectados * T; iter += T)
 	{
 		*(matriz + iter) = 3;							//Estado 3 (Infectado)
@@ -30,7 +30,7 @@ void iniciar(int *matriz, int& nPersonas, int& nInicialInfectados, int& sanasT, 
 		*(matriz + iter + 3) = distributionXY(generator);	//Posición en Eje-Y
 	}
 
-	//llenamos el vector con la demas cantidad de personas que no estan infectadas, se hace un random que decide si es inmune o sano
+	//Llenado del vector con la demás cantidad de personas que no están infectadas, se hace un random que decide si es inmune o sano
 	for (int iter = nInicialInfectados * 4; iter<nPersonas * T; iter += T)
 	{
 		*(matriz + iter) = distribution12(generator);		//Estado 1 (Inmune) o 2 (Sano)
@@ -44,7 +44,7 @@ void iniciar(int *matriz, int& nPersonas, int& nInicialInfectados, int& sanasT, 
 	}
 }
 
-//metodo que imprime el vector
+//Método que imprime el vector
 void imprimir(int const *matriz, int& nPersonas)
 {
 	for (int iter = 0; iter < nPersonas * T; iter += T)
@@ -57,6 +57,7 @@ void imprimir(int const *matriz, int& nPersonas)
 	}
 }
 
+//Método que se encarga de realizar el movimiento de cada una de las personas
 void simulacion(int *subMatriz, int& nPersonas, int& cnt_proc, int& size)
 {
 	default_random_engine generator;
@@ -204,7 +205,7 @@ int cuentaSanos(int *matriz, int& nPersonas, int& cnt_proc, int& mid)
 	return sanosRestantes;
 }
 
-void imprimirEstadisticas(int& const nPersonas,int& const tInfectadas,int& enfermosRestantes, int& const tSanas, int& const tInmunes, int& const tMuertas, int& const tics)
+void imprimirEstadisticas(int& nPersonas,int& tInfectadas,int& enfermosRestantes, int&  tSanas, int&  tInmunes, int&  tMuertas, int&  tics)
 {
 	cout << endl << endl << "     ------------------------------ Dia " << tics << " ------------------------------" << endl << endl;
 	cout << "\n\t\t\t   Personas infectadas \n\n\t Porcentaje: " << 1.0*tInfectadas / nPersonas << "\t\t\t\t Cantidad actual: " << tInfectadas << endl
@@ -225,7 +226,7 @@ void imprimirEstadisticas(int& const nPersonas,int& const tInfectadas,int& enfer
 	archivo.close();
 }
 
-void EstadisticasFinales(int& const nPersonas, int& const infectadasT, int& const tSanas, int& const sanasI, int& const curadasT, int& const inmunesT, int& const muertasT, int& const tics)
+void EstadisticasFinales(int& nPersonas, int& const infectadasT, int& tSanas, int& sanasI, int&  curadasT, int&  inmunesT, int&  muertasT, int&  tics)
 {
 	cout << "     -------------------------------------------------------------------" << endl << endl;
 	cout << "\n\n\n\t\t\t ESTADISTICAS FINALES" << endl << endl;
