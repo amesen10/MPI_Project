@@ -1,3 +1,10 @@
+/*
+		PROYECTO MPI
+ Estudiantes:
+	Ivania Calderón B61308
+	Andrés Mesén B64390
+*/
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
