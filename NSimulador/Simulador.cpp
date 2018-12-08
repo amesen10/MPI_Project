@@ -199,7 +199,7 @@ void imprimirEstadisticas(int& nPersonas,int& tInfectadas,int& enfermosRestantes
 }
 
 //Procedimiento que recibe los parámetros que resumen toda la simulación; estos datos se despliegan en consola y en el archivo .txt de salida
-void EstadisticasFinales(int& nPersonas, int& const infectadasT, int& tSanas, int& sanasI, int&  curadasT, int&  inmunesT, int&  muertasT, int&  tics)
+void EstadisticasFinales(int& nPersonas, int& infectadasT, int& tSanas, int& sanasI, int&  curadasT, int&  inmunesT, int&  muertasT, int&  tics)
 {
 	cout << "     -------------------------------------------------------------------" << endl << endl;
 	cout << "\n\n\n\t\t\t ESTADISTICAS FINALES" << endl << endl;
