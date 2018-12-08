@@ -177,12 +177,12 @@ int cuentaInfectados(int *matriz, int** infectados, int& nPersonas, int& cnt_pro
 
 void imprimirEstadisticas(int& const nPersonas,int& const tInfectadas, int& const tSanas, int& const tInmunes, int& const tMuertas, int& const tics)
 {
-	//cout << endl << endl << "     ------------------------------ Dia " << tics << " ------------------------------" << endl << endl;
-	//cout << "\n\t\t\t   Personas infectadas \n\n\t Porcentaje: " << 1.0*tInfectadas / nPersonas << "\t\t\t\t Cantidad actual: " << tInfectadas << endl
-	//	//<< "\n\n\t\t\t    Total infectadas \n\n\t Porcentaje: " << 1.0*totalinfectados / nPersonas << "\t\t\t\t Cantidad actual: " << totalinfectados << endl
-	//	<< "\n\n\t\t\t     Personas sanos \n\n\t Porcentaje : " << 1.0*tSanas / nPersonas << "\t\t\t\t Cantidad actual: " << tSanas << endl
-	//	<< "\n\n\t\t\t    Personas curados \n\n\t Porcentaje : " << 1.0*tInmunes / nPersonas << "\t\t\t\t Cantidad actual: " << tInmunes << endl
-	//	<< "\n\n\t\t\t    Personas muertas \n\n\t Porcentaje : " << 1.0*tMuertas / nPersonas << "\t\t\t\t Cantidad actual: " << tMuertas << endl << endl;
+	cout << endl << endl << "     ------------------------------ Dia " << tics << " ------------------------------" << endl << endl;
+	cout << "\n\t\t\t   Personas infectadas \n\n\t Porcentaje: " << 1.0*tInfectadas / nPersonas << "\t\t\t\t Cantidad actual: " << tInfectadas << endl
+		//<< "\n\n\t\t\t    Total infectadas \n\n\t Porcentaje: " << 1.0*totalinfectados / nPersonas << "\t\t\t\t Cantidad actual: " << totalinfectados << endl
+		<< "\n\n\t\t\t     Personas sanos \n\n\t Porcentaje : " << 1.0*tSanas / nPersonas << "\t\t\t\t Cantidad actual: " << tSanas << endl
+		<< "\n\n\t\t\t    Personas curados \n\n\t Porcentaje : " << 1.0*tInmunes / nPersonas << "\t\t\t\t Cantidad actual: " << tInmunes << endl
+		<< "\n\n\t\t\t    Personas muertas \n\n\t Porcentaje : " << 1.0*tMuertas / nPersonas << "\t\t\t\t Cantidad actual: " << tMuertas << endl << endl;
 
 	ofstream archivo;
 	archivo.open("Estadisticas.txt", std::fstream::app);
@@ -198,14 +198,14 @@ void imprimirEstadisticas(int& const nPersonas,int& const tInfectadas, int& cons
 
 void EstadisticasFinales(int& const nPersonas, int& const infectadasT, int& const tSanas, int& const sanasI, int& const curadasT, int& const inmunesT, int& const muertasT, int& const tics)
 {
-	/*cout << "     -------------------------------------------------------------------" << endl << endl;
+	cout << "     -------------------------------------------------------------------" << endl << endl;
 	cout << "\n\n\n\t\t\t ESTADISTICAS FINALES" << endl << endl;
 	cout << "\n\t\t\t  Personas infectadas \n\n\t Porcentaje: " << 1.0*infectadasT / nPersonas << "\t\t\t Cantidad total: " << infectadasT << endl
 		<< "\n\n\t\t\t    Sanos Iniciales  \n\n\t Porcentaje : " << 1.0*sanasI / nPersonas << "\t\t\t Cantidad total: " << sanasI << endl
 		<< "\n\n\t\t\t    Sanos Restantes \n\n\t Porcentaje : " << 1.0*tSanas / nPersonas << "\t\t\t Cantidad total: " << tSanas << endl
 		<< "\n\n\t\t\t    Personas curados \n\n\t Porcentaje : " << 1.0*curadasT / nPersonas << "\t\t\t Cantidad total: " << curadasT << endl
 		<< "\n\n\t\t\t    Personas muertas \n\n\t Porcentaje : " << 1.0*muertasT / nPersonas << "\t\t\t Cantidad total: " << muertasT << endl << endl;
-*/
+
 	ofstream archivo;
 	archivo.open("Estadisticas.txt", std::fstream::app);
 	archivo << "\t-------------------------------------------------------------------" << endl << endl
@@ -327,13 +327,13 @@ int main(int argc, char* argv[]) {
 		//cout << "\t MATRIZ FINAL " << tics << endl << endl;
 		//imprimir(matriz, nPersonas);
 		cout<< endl << "\t  Tics totales: " << tics << endl
-			<< endl << "\t  Tiempo-Pared: " << elapsed << "s" << endl	//y lo de tiempo barrera
-			<< endl << "\t  Tiempo-Pared/Tic: " << elapsed / tics << "s" << endl;
+			<< endl << "\t  Tiempo-Pared: " << tPared << "s" << endl	//y lo de tiempo barrera
+			<< endl << "\t  Tiempo-Pared/Tic: " << tPared / tics << "s" << endl;
 		archivo.open("Estadisticas.txt", std::fstream::app);
 		archivo << "\t-------------------------------------------------------------------" << endl << endl
 			<< endl << "\t  Tics totales: " << tics << endl
-			<< endl << "\t  Tiempo-Pared: " << elapsed << "s" << endl	//y lo de tiempo barrera
-			<< endl << "\t  Tiempo-Pared/Tic: " << elapsed / tics << "s" << endl;
+			<< endl << "\t  Tiempo-Pared: " << tPared << "s" << endl	//y lo de tiempo barrera
+			<< endl << "\t  Tiempo-Pared/Tic: " << tPared / tics << "s" << endl;
 		archivo.close();
 		cin.ignore();
 	}
